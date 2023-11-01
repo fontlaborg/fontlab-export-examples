@@ -1,0 +1,19 @@
+---
+fixes: 
+  nbspace: true
+fontinfo:
+  copyright: Copyright 2023 The Agdasima Project Authors (https://github.com/docrepair-fonts/agdasima-fonts).
+  openTypeNameLicense: "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+  openTypeNameLicenseURL: https://scripts.sil.org/OFL
+  openTypeOS2VendorID: GOOG
+  openTypeOS2Type: []
+input_path: ../sources/cosm-var.vfj
+output_folder: "../build"
+public_repo_url: https://github.com/docrepair-fonts/agdasima-fonts
+fonts:
+  - ref_path: ../sources/reference/AgencyFB-Reg.ttf
+    ufo_path: "{output_folder}/masters/Agdasima-Regular.ufo"
+    ttf_path: "{public_repo_folder}/fonts/ttf/Agdasima-Regular.ttf"
+  - ref_path: ../sources/reference/AgencyFB-Bold.ttf
+    ufo_path: "{output_folder}/masters/Agdasima-Bold.ufo"
+    ttf_path: "{public_repo_folder}/fonts/ttf/Agdasima-Bold.ttf"

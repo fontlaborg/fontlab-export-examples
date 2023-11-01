@@ -1,0 +1,64 @@
+#!/usr/bin/open
+import yaml
+from fontlab import flWorkspace, ExportControl, flPreferences
+from PythonQt import QtCore
+from pathlib import Path
+import sys
+from PythonQt.QtGui import QGuiApplication, QAction
+from fontlab_export_tools.utils import read_config
+import subprocess
+
+
+class FontLabFontExport:
+    def __init__(self):
+        self.qApp = QGuiApplication.instance()
+        self.script_folder = Path(__file__).resolve().parent
+        config_path = Path(self.qApp.arguments()[2]).resolve()
+        self.config = read_config(config_path)
+        self.font_base_name = Path(self.config.input_path).stem
+        self.fl_workspace = flWorkspace.instance()
+        self.fl_main = self.fl_workspace.mainWindow
+
+    def getQAction(self, code):
+        for action in self.fl_main.findChildren(QAction):
+            if code in action.statusTip:
+                return action
+        return None
+
+    def export(self):
+        input_path = self.config.input_path
+        output_folder = self.config.output_folder
+        if not output_folder.is_dir():
+            output_folder.mkdir(parents=True)
+
+        self.fl_main.loadFont(input_path)
+
+        fl_package = self.fl_workspace.currentPackage
+        fl_prefs = flPreferences()
+        fl_prefd = fl_prefs.save()
+        fl_prefd["export.show_confirmation"] = False
+        fl_prefs.load(fl_prefd)
+        fl_export = ExportControl()
+        fl_export.profileName = "OpenType TT" #"DesignSpace + UFO"
+        fl_export.destinationMode = fl_prefs.DestinationFolder
+        fl_export.conflictMode = fl_prefs.ConflictOverwrite
+        fl_export.contentMode = fl_prefs.ContentMasters
+        fl_export.destinationFolder = output_folder
+        fl_export.groupProfiles = False
+        fl_export.groupFamily = False
+
+        self.fl_workspace.exportFont(fl_package, fl_export)
+        self.qApp.processEvents()
+        fl_package.close(False)
+        self.getQAction("mainwindow.actionExit").trigger()
+        # app.ui.menu.file.exit.trigger()
+        #self.qApp.quit()
+
+
+def fl_main():
+    fl_font_export = FontLabFontExport()
+    fl_font_export.export()
+
+
+if __name__ == "__main__":
+    fl_main()
