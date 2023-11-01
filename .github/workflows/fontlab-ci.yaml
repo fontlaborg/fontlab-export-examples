@@ -18,63 +18,11 @@ jobs:
       - name: Get FontLab Version
         id: get_version
         run: |
-          # Send the web request
           $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
-          $response = Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue
-
-          # Extract redirected URL
-          $redirectedUrl = $response.BaseResponse.ResponseUri.AbsoluteUri
-
-          # Extract filename from the URL
-          $filename = [System.IO.Path]::GetFileName($redirectedUrl)
-
-          # Store the filename in a variable or output it
-          Write-Host "Extracted Filename: $filename"
-
-          # Separator for better readability
-          Write-Host "----- BEGIN HEADER DEBUG -----"
-
-          # Current Timestamp
-          Write-Host ("Timestamp: " + (Get-Date))
-
-          # Iterate through all header keys
-          $response.Headers.Keys | ForEach-Object {
-              $key = $_
-              $value = $response.Headers[$_]
-              
-              # Type information
-              $type = $value.GetType().FullName
-              
-              Write-Host ("Key: $key, Type: $type")
-              
-              # If value is array, iterate through it
-              if ($value -is [System.Array]) {
-                  $value | ForEach-Object { Write-Host ("  Value: $_") }
-              } else {
-                  Write-Host ("  Value: $value")
-              }
-          }
-
-          # Separator for better readability
-          Write-Host "----- END HEADER DEBUG -----"
-
-          $contentType = $response.Headers['Content-Type'].Trim()
-          $contentDisposition = $response.Headers["Content-Disposition"]
-
-          if ($response -eq $null) {
-              throw "Failed to receive a valid response from the server."
-          }
-          if ($response.StatusCode -ne 200) {
-              throw "Received HTTP status code $($response.StatusCode)"
-          }
-          if ($contentType -notmatch 'application/x-msdownload') {
-              throw "Received unexpected Content-Type $($response.ContentType)"
-          }
-          if ($response.BaseResponse.ResponseUri -eq $null) {
-              Write-Host "Debug: Full Response Object: $($response | Out-String)"
-              throw "No ResponseUri in the HTTP response."
-          }
-          $version = $response.BaseResponse.ResponseUri.Segments[-1].Replace('FontLab-8-Win64-Install-', '').Replace('.exe', '')
+          $response1 = Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -MaximumRedirection 0 -ErrorAction SilentlyContinue
+          $redirectUrl = $response1.Headers['Location']
+          $response2 = Invoke-WebRequest -Uri $redirectUrl -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue
+          $version = [System.IO.Path]::GetFileName($response2.BaseResponse.ResponseUri.AbsoluteUri).Replace('FontLab-8-Win64-Install-', '').Replace('.exe', '')
           echo "::set-output name=version::$version"
 
       - name: Cache FontLab Installer
@@ -90,7 +38,7 @@ jobs:
         run: |
           $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
           $output = "FontLab-Installer.exe"
-          Invoke-WebRequest -Uri $url -OutFile $output
+          Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -OutFile $output
 
       - name: Install FontLab
         run: |
@@ -99,8 +47,8 @@ jobs:
 
       - name: Run Build Script
         run: |
-          $fontLabExe = "C:\Program Files\FontLab\FontLab 8\FontLab8.exe"
-          $scriptPath = "scripts\fontlab_export.vfpy"
+          $fontLabExe = "C:\\Program Files\\FontLab\\FontLab 8\\FontLab8.exe"
+          $scriptPath = "scripts\\fontlab_export.vfpy"
           Start-Process -FilePath $fontLabExe -ArgumentList $scriptPath -Wait
 
       - name: Test Exported Fonts
@@ -117,9 +65,9 @@ jobs:
           $outputDirectory = "build"
           $distDirectory = "fonts"
           if (Test-Path $outputDirectory) {
-              Move-Item -Path $outputDirectory\*.ttf -Destination $distDirectory
+              Move-Item -Path $outputDirectory\\*.ttf -Destination $distDirectory
           }
-          git add $distDirectory\*.ttf
+          git add $distDirectory\\*.ttf
           $commit = git commit -m "Update exported fonts"
           if ($commit -ne $null) {
               git push
