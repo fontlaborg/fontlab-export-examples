@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  GITHUB_STATE: ${{ github.workspace }}/state.txt
+  GITHUB_OUTPUT: ${{ github.workspace }}/output.txt
+
 jobs:
   build:
     runs-on: windows-latest
@@ -25,7 +29,7 @@ jobs:
               throw "Could not find the redirect URL in the response headers."
           }
           $version = [System.IO.Path]::GetFileName($redirectUrl).Replace('FontLab-8-Win64-Install-', '').Replace('.exe', '')
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Cache FontLab Installer
         id: cache-installer
@@ -49,7 +53,7 @@ jobs:
 
       - name: Run Build Script
         run: |
-          $fontLabExe = "C:\\Program Files\\FontLab\\FontLab 8\\FontLab8.exe"
+          $fontLabExe = "C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           $scriptPath = "scripts\\fontlab_export.vfpy"
           Start-Process -FilePath $fontLabExe -ArgumentList $scriptPath -Wait
 
