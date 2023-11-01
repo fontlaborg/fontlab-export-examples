@@ -19,14 +19,13 @@ jobs:
         id: get_version
         run: |
           $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
-          $response = Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -MaximumRedirection 0 -ErrorAction SilentlyContinue
+          $response = Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -MaximumRedirection 0 -ErrorAction SilentlyContinue -SkipHttpErrorCheck
           $redirectUrl = $response.Headers['Location']
           if ($null -eq $redirectUrl) {
               throw "Could not find the redirect URL in the response headers."
           }
           $version = [System.IO.Path]::GetFileName($redirectUrl).Replace('FontLab-8-Win64-Install-', '').Replace('.exe', '')
           echo "::set-output name=version::$version"
-
 
       - name: Cache FontLab Installer
         id: cache-installer
