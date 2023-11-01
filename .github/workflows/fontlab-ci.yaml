@@ -20,15 +20,15 @@ jobs:
         run: |
           $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
           $response = Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue
-          $response.Headers.Keys | ForEach-Object { Write-Host "$_ : $($response.Headers[$_])" }
-          Write-Host "Debug: Full Response Object: $($response | Out-String)"
+          $contentType = $response.Headers['Content-Type'].Trim()
+          Write-Host "Debug: Content-Type: $contentType"
           if ($response -eq $null) {
               throw "Failed to receive a valid response from the server."
           }
           if ($response.StatusCode -ne 200) {
               throw "Received HTTP status code $($response.StatusCode)"
           }
-          if ($response.ContentType -notmatch 'application/x-msdownload') {
+          if ($contentType -notmatch 'application/x-msdownload') {
               throw "Received unexpected Content-Type $($response.ContentType)"
           }
           if ($response.BaseResponse.ResponseUri -eq $null) {
