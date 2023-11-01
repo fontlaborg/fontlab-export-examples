@@ -18,8 +18,18 @@ jobs:
       - name: Get FontLab Version
         id: get_version
         run: |
+          # Send the web request
           $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
           $response = Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue
+
+          # Extract redirected URL
+          $redirectedUrl = $response.BaseResponse.ResponseUri.AbsoluteUri
+
+          # Extract filename from the URL
+          $filename = [System.IO.Path]::GetFileName($redirectedUrl)
+
+          # Store the filename in a variable or output it
+          Write-Host "Extracted Filename: $filename"
 
           # Separator for better readability
           Write-Host "----- BEGIN HEADER DEBUG -----"
@@ -49,6 +59,7 @@ jobs:
           Write-Host "----- END HEADER DEBUG -----"
 
           $contentType = $response.Headers['Content-Type'].Trim()
+          $contentDisposition = $response.Headers["Content-Disposition"]
 
           if ($response -eq $null) {
               throw "Failed to receive a valid response from the server."
