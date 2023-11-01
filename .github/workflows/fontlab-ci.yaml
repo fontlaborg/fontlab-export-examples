@@ -15,6 +15,20 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v2
 
+    - name: Get FontLab Version
+      id: get_version
+      run: |
+        $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
+        $response = Invoke-WebRequest -Uri $url -MaximumRedirection 0 -ErrorAction SilentlyContinue
+        if ($response -eq $null) {
+            throw "Failed to receive a valid response from the server."
+        }
+        if ($response.BaseResponse.ResponseUri -eq $null) {
+            throw "No ResponseUri in the HTTP response."
+        }
+        $version = $response.BaseResponse.ResponseUri.Segments[-1].Replace('FontLab-8-Win64-Install-', '').Replace('.exe', '')
+        echo "::set-output name=version::$version"
+
     - name: Cache FontLab Installer
       id: cache-installer
       uses: actions/cache@v2
@@ -22,14 +36,7 @@ jobs:
         path: |
           FontLab-Installer.exe
         key: ${{ runner.os }}-fontlab-installer-${{ steps.get_version.outputs.version }}
-    
-    - name: Get FontLab Version
-      id: get_version
-      run: |
-        $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
-        $response = Invoke-WebRequest -Uri $url -MaximumRedirection 0 -ErrorAction SilentlyContinue
-        $version = $response.BaseResponse.ResponseUri.Segments[-1].Replace('FontLab-8-Win64-Install-', '').Replace('.exe', '')
-        echo "::set-output name=version::$version"
+
 
     - name: Download FontLab
       if: steps.cache-installer.outputs.cache-hit != 'true'
