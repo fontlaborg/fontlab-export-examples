@@ -16,18 +16,21 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Get FontLab Version
-      id: get_version
-      run: |
+    id: get_version
+    run: |
         $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
         $response = Invoke-WebRequest -Uri $url -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue
+        Write-Host "Debug: Response Object: $response"
         if ($response -eq $null) {
             throw "Failed to receive a valid response from the server."
         }
+        Write-Host "Debug: Response URI: $($response.BaseResponse.ResponseUri)"
         if ($response.BaseResponse.ResponseUri -eq $null) {
             throw "No ResponseUri in the HTTP response."
         }
         $version = $response.BaseResponse.ResponseUri.Segments[-1].Replace('FontLab-8-Win64-Install-', '').Replace('.exe', '')
         echo "::set-output name=version::$version"
+
 
     - name: Cache FontLab Installer
       id: cache-installer
