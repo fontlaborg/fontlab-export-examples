@@ -12,70 +12,76 @@ jobs:
       fontlab_version: ${{ steps.get_version.outputs.version }}
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-    - name: Get FontLab Version
-      id: get_version
-      run: |
-        $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
-        $response = Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue
-        if ($response -eq $null) {
-            throw "Failed to receive a valid response from the server."
-        }
-        if ($response.BaseResponse.ResponseUri -eq $null) {
-            throw "No ResponseUri in the HTTP response."
-        }
-        $version = $response.BaseResponse.ResponseUri.Segments[-1].Replace('FontLab-8-Win64-Install-', '').Replace('.exe', '')
-        echo "::set-output name=version::$version"
+      - name: Get FontLab Version
+        id: get_version
+        run: |
+          $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
+          $response = Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue -OutNull
+          if ($response -eq $null) {
+              throw "Failed to receive a valid response from the server."
+          }
+          if ($response.StatusCode -ne 200) {
+              throw "Received HTTP status code $($response.StatusCode)"
+          }
+          if ($response.ContentType -notmatch 'application/octet-stream') {
+              throw "Received unexpected Content-Type $($response.ContentType)"
+          }
+          if ($response.BaseResponse.ResponseUri -eq $null) {
+              Write-Host "Debug: Response Headers: $($response.Headers)"
+              throw "No ResponseUri in the HTTP response."
+          }
+          $version = $response.BaseResponse.ResponseUri.Segments[-1].Replace('FontLab-8-Win64-Install-', '').Replace('.exe', '')
+          echo "::set-output name=version::$version"
 
-    - name: Cache FontLab Installer
-      id: cache-installer
-      uses: actions/cache@v2
-      with:
-        path: |
-          FontLab-Installer.exe
-        key: ${{ runner.os }}-fontlab-installer-${{ steps.get_version.outputs.version }}
+      - name: Cache FontLab Installer
+        id: cache-installer
+        uses: actions/cache@v2
+        with:
+          path: |
+            FontLab-Installer.exe
+          key: ${{ runner.os }}-fontlab-installer-${{ steps.get_version.outputs.version }}
 
+      - name: Download FontLab
+        if: steps.cache-installer.outputs.cache-hit != 'true'
+        run: |
+          $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
+          $output = "FontLab-Installer.exe"
+          Invoke-WebRequest -Uri $url -OutFile $output
 
-    - name: Download FontLab
-      if: steps.cache-installer.outputs.cache-hit != 'true'
-      run: |
-        $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
-        $output = "FontLab-Installer.exe"
-        Invoke-WebRequest -Uri $url -OutFile $output
+      - name: Install FontLab
+        run: |
+          $installer = Get-ChildItem -Path . -Filter "FontLab-Installer.exe" | Select-Object -ExpandProperty FullName
+          Start-Process -FilePath $installer -ArgumentList "/NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES" -Wait
 
-    - name: Install FontLab
-      run: |
-        $installer = Get-ChildItem -Path . -Filter "FontLab-Installer.exe" | Select-Object -ExpandProperty FullName
-        Start-Process -FilePath $installer -ArgumentList "/NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES" -Wait
+      - name: Run Build Script
+        run: |
+          $fontLabExe = "C:\Program Files\FontLab\FontLab 8\FontLab8.exe"
+          $scriptPath = "scripts\fontlab_export.vfpy"
+          Start-Process -FilePath $fontLabExe -ArgumentList $scriptPath -Wait
 
-    - name: Run Build Script
-      run: |
-        $fontLabExe = "C:\Program Files\FontLab\FontLab 8\FontLab8.exe"
-        $scriptPath = "scripts\fontlab_export.vfpy"
-        Start-Process -FilePath $fontLabExe -ArgumentList $scriptPath -Wait
+      - name: Test Exported Fonts
+        run: |
+          # Add your testing commands here
 
-    - name: Test Exported Fonts
-      run: |
-        # Add your testing commands here
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
 
-    - name: Configure Git
-      run: |
-        git config user.name "GitHub Action"
-        git config user.email "action@github.com"
-
-    - name: Commit and Push Exported Fonts
-      run: |
-        $outputDirectory = "build"
-        $distDirectory = "fonts"
-        if (Test-Path $outputDirectory) {
-            Move-Item -Path $outputDirectory\*.ttf -Destination $distDirectory
-        }
-        git add $distDirectory\*.ttf
-        $commit = git commit -m "Update exported fonts"
-        if ($commit -ne $null) {
-            git push
-        } else {
-            Write-Output "No new fonts to commit"
-        }
+      - name: Commit and Push Exported Fonts
+        run: |
+          $outputDirectory = "build"
+          $distDirectory = "fonts"
+          if (Test-Path $outputDirectory) {
+              Move-Item -Path $outputDirectory\*.ttf -Destination $distDirectory
+          }
+          git add $distDirectory\*.ttf
+          $commit = git commit -m "Update exported fonts"
+          if ($commit -ne $null) {
+              git push
+          } else {
+              Write-Output "No new fonts to commit"
+          }
