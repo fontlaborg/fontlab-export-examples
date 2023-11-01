@@ -19,7 +19,7 @@ jobs:
       id: get_version
       run: |
         $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
-        $response = Invoke-WebRequest -Uri $url -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue
+        $response = Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue
         Write-Host "Debug: Response Object: $response"
         if ($response -eq $null) {
             throw "Failed to receive a valid response from the server."
