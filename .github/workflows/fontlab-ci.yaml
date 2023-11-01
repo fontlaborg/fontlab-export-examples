@@ -27,7 +27,7 @@ jobs:
           if ($response.StatusCode -ne 200) {
               throw "Received HTTP status code $($response.StatusCode)"
           }
-          if ($response.ContentType -notmatch 'application/octet-stream') {
+          if ($response.ContentType -notmatch 'application/x-msdownload') {
               throw "Received unexpected Content-Type $($response.ContentType)"
           }
           if ($response.BaseResponse.ResponseUri -eq $null) {
