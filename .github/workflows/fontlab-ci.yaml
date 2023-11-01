@@ -20,8 +20,36 @@ jobs:
         run: |
           $url = "https://download.fontlab.com/fontlab-8/upd-win64.php"
           $response = Invoke-WebRequest -Uri $url -Headers @{"Accept-Language"="en-US,en;q=0.9"} -UserAgent "Mozilla/5.0" -ErrorAction SilentlyContinue
+
+          # Separator for better readability
+          Write-Host "----- BEGIN HEADER DEBUG -----"
+
+          # Current Timestamp
+          Write-Host ("Timestamp: " + (Get-Date))
+
+          # Iterate through all header keys
+          $response.Headers.Keys | ForEach-Object {
+              $key = $_
+              $value = $response.Headers[$_]
+              
+              # Type information
+              $type = $value.GetType().FullName
+              
+              Write-Host ("Key: $key, Type: $type")
+              
+              # If value is array, iterate through it
+              if ($value -is [System.Array]) {
+                  $value | ForEach-Object { Write-Host ("  Value: $_") }
+              } else {
+                  Write-Host ("  Value: $value")
+              }
+          }
+
+          # Separator for better readability
+          Write-Host "----- END HEADER DEBUG -----"
+
           $contentType = $response.Headers['Content-Type'].Trim()
-          Write-Host "Debug: Content-Type: $contentType"
+
           if ($response -eq $null) {
               throw "Failed to receive a valid response from the server."
           }
@@ -32,7 +60,7 @@ jobs:
               throw "Received unexpected Content-Type $($response.ContentType)"
           }
           if ($response.BaseResponse.ResponseUri -eq $null) {
-              Write-Host "Debug: Response Headers: $($response.Headers)"
+              Write-Host "Debug: Full Response Object: $($response | Out-String)"
               throw "No ResponseUri in the HTTP response."
           }
           $version = $response.BaseResponse.ResponseUri.Segments[-1].Replace('FontLab-8-Win64-Install-', '').Replace('.exe', '')
