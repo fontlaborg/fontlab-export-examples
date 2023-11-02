@@ -62,13 +62,11 @@ jobs:
           installer="FontLab-Installer.exe"
           wine $installer /NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES
 
-      - name: Allow FontLab to run
+      - name: Run FontLab and build script concurrently
         run: |
           appItExe="scripts/fontlab_run.exe"
-          wine64 $appItExe
-
-      - name: Run Build Script
-        run: |
+          wine64 $appItExe &
+          
           fontLabExe="C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           scriptPath="scripts/fontlab_export.vfpy"
           configPath="scripts/fontlab_build.yaml"
