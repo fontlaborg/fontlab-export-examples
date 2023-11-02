@@ -31,11 +31,11 @@ jobs:
         run: |
           wineprefix_path=$(winepath -w "$HOME/.wine")
           echo "Wine prefix path: $wineprefix_path"
-          winepath -u "C:\users\$(whoami)\AppData\Local\FontLab\FontLab 8" > fontlab_local_path.txt
-          cat fontlab_local_path.txt
-          echo "FONTLAB_DATA_PATH=$(cat fontlab_local_path.txt)" >> $GITHUB_ENV  
+          wine_user_dir=$(winepath -u 'C:\users\'"$USER"'\AppData\Local\FontLab\FontLab 8')
+          echo "Wine FontLab directory: $wine_user_dir"
+          echo "FONTLAB_DATA_PATH=$wine_user_dir" >> $GITHUB_ENV
 
-      - name: Start Xvfb
+          - name: Start Xvfb
         run: |
           Xvfb :99 & export DISPLAY=:99
           echo "DISPLAY=:99" >> $GITHUB_ENV
