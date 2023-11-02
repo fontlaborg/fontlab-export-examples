@@ -45,25 +45,37 @@ jobs:
       - name: Install FontLab
         run: |
           $installer = Get-ChildItem -Path . -Filter "FontLab-Installer.exe" | Select-Object -ExpandProperty FullName
-          Start-Process -FilePath $installer -ArgumentList "/NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES" -Wait
+          Start-Process -FilePath "$installer" -ArgumentList "/NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES" -Wait
 
       - name: Prep FontLab data folder
         run: |
-          $fontlabUserDir = Join-Path $env:APPDATA 'FontLab\\FontLab 8'
+          $fontlabUserDir = Join-Path "$env:APPDATA" "FontLab\\FontLab 8"
           Write-Output "FontLab directory: $fontlabUserDir"
           if (-not (Test-Path "$fontlabUserDir")) {
               New-Item -ItemType Directory -Path "$fontlabUserDir" -Force
           }
           Copy-Item -Path "scripts\\startupScript.py" -Destination "$fontlabUserDir"
           tree /F $env:APPDATA
-          
+
       - name: Run Build Script
         run: |
           $fontLabExe = "C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           $scriptPath = "scripts\\fontlab_export.vfpy"
           $configPath = "scripts\\fontlab_build.yaml"
           $arguments = @("$scriptPath", "$configPath")
-          Start-Process -FilePath "$fontLabExe" -ArgumentList $arguments -Wait
+          $process = Start-Process -FilePath "$fontLabExe" -ArgumentList "$scriptPath" -PassThru
+          $timeout = New-Timespan -Seconds 300
+          $sw = [Diagnostics.Stopwatch]::StartNew()
+          while ($sw.Elapsed -lt $timeout) {
+              if ($process.HasExited) {
+                  break
+              }
+              Start-Sleep -Seconds 5
+          }
+          if (-not $process.HasExited) {
+              $process | Stop-Process -Force
+              Write-Error "Process timed out."
+          }
 
       - name: Test Exported Fonts
         run: |

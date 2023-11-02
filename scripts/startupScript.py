@@ -1,6 +1,7 @@
 from PythonQt.QtCore import QTimer, QEvent, qDebug
 from PythonQt.QtGui import QGuiApplication
 from PythonQt.private import QObject
+from fontlab import flWorkspace, ExportControl, flPreferences, flItems
 
 def pprint(msg):
     qDebug(str(msg))
