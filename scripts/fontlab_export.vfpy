@@ -13,10 +13,11 @@ class FontLabFontExport:
     def __init__(self):
         self.qApp = QGuiApplication.instance()
         self.script_folder = Path(__file__).resolve().parent
+        self.args = self.qApp.arguments()
         #config_path = Path(self.qApp.arguments()[2]).resolve()
-        self.input_path = Path(self.script_folder, "../sources/cosm-var.vfj").resolve()
+        self.input_path = Path(self.args[2]).resolve()
         pprint(f"{self.input_path=}")
-        self.output_folder = Path(self.script_folder, "../build").resolve()
+        self.output_folder = Path(self.args[3]).resolve()
         pprint(f"{self.output_folder=}")
         self.font_base_name = self.input_path.stem
         self.fl_workspace = flWorkspace.instance()
