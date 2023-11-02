@@ -28,6 +28,7 @@ jobs:
       - name: Start Xvfb
         run: |
           Xvfb :99 & export DISPLAY=:99
+          echo "DISPLAY=:99" >> $GITHUB_ENV
 
       - name: Get FontLab Version
         id: get_version
