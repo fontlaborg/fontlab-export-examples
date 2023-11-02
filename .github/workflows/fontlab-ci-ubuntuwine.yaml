@@ -19,6 +19,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 & export DISPLAY=:99
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
       - name: Install prerequisites
         run: |
           sudo dpkg --add-architecture i386
@@ -26,11 +31,6 @@ jobs:
           sudo apt-get install wine64 wine32 curl tree
           wineboot
           echo "WINEPREFIX=$HOME/.wine" >> $GITHUB_ENV
-
-      - name: Start Xvfb
-        run: |
-          Xvfb :99 & export DISPLAY=:99
-          echo "DISPLAY=:99" >> $GITHUB_ENV
 
       - name: Get FontLab Version
         id: get_version
@@ -68,12 +68,12 @@ jobs:
         run: |
           wineprefix_path=$(winepath -w "$HOME/.wine")
           echo "Wine prefix path: $wineprefix_path"
-          wine_user_dir=$(winepath -u 'C:\users\'"$USER"'\AppData\Local\FontLab\FontLab 8')
-          echo "Wine FontLab directory: $wine_user_dir"
+          fontlab_user_dir=$(winepath -u 'C:\users\'"$USER"'\Application Data\FontLab\FontLab 8')
+          echo "Wine FontLab directory: $fontlab_user_dir"
           tree "/home/runner/.wine/dosdevices/c:/users" 
-          echo "FONTLAB_DATA_PATH=$wine_user_dir" >> $GITHUB_ENV
-          mkdir -p "$wine_user_dir"
-          cp "scripts/startupScript.py" "$wine_user_dir"
+          echo "FONTLAB_DATA_PATH=$fontlab_user_dir" >> $GITHUB_ENV
+          mkdir -p "$fontlab_user_dir"
+          cp "scripts/startupScript.py" "$fontlab_user_dir"
 
       - name: Run FontLab and build script
         run: |          
