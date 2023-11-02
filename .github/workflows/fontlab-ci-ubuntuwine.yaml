@@ -70,7 +70,7 @@ jobs:
           echo "Wine prefix path: $wineprefix_path"
           wine_user_dir=$(winepath -u 'C:\users\'"$USER"'\AppData\Local\FontLab\FontLab 8')
           echo "Wine FontLab directory: $wine_user_dir"
-          tree "$wine_user_dir"
+          tree "/home/runner/.wine/dosdevices/c:/users" 
           echo "FONTLAB_DATA_PATH=$wine_user_dir" >> $GITHUB_ENV
           mkdir -p "$wine_user_dir"
           cp "scripts/startupScript.py" "$wine_user_dir"
