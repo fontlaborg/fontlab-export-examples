@@ -23,7 +23,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get install wine64 wine32 curl
+          sudo apt-get install wine64 wine32 curl tree
           wineboot
           echo "WINEPREFIX=$HOME/.wine" >> $GITHUB_ENV
 
@@ -70,7 +70,9 @@ jobs:
           echo "Wine prefix path: $wineprefix_path"
           wine_user_dir=$(winepath -u 'C:\users\'"$USER"'\AppData\Local\FontLab\FontLab 8')
           echo "Wine FontLab directory: $wine_user_dir"
+          tree "$wine_user_dir"
           echo "FONTLAB_DATA_PATH=$wine_user_dir" >> $GITHUB_ENV
+          mkdir -p "$wine_user_dir"
           cp "scripts/startupScript.py" "$wine_user_dir"
 
       - name: Run FontLab and build script
