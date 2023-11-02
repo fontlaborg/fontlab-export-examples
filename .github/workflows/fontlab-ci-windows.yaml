@@ -49,13 +49,13 @@ jobs:
 
       - name: Prep FontLab data folder
         run: |
-          tree /F $env:APPDATA
-          $fontlabUserDir = Join-Path $env:APPDATA 'FontLab\FontLab 8'
+          $fontlabUserDir = Join-Path $env:APPDATA 'FontLab\\FontLab 8'
           Write-Output "FontLab directory: $fontlabUserDir"
-          if (-not (Test-Path $fontlabUserDir)) {
-              New-Item -ItemType Directory -Path $fontlabUserDir -Force
+          if (-not (Test-Path "$fontlabUserDir")) {
+              New-Item -ItemType Directory -Path "$fontlabUserDir" -Force
           }
-          Copy-Item -Path "scripts\startupScript.py" -Destination $fontlabUserDir
+          Copy-Item -Path "scripts\\startupScript.py" -Destination "$fontlabUserDir"
+          tree /F $env:APPDATA
           
       - name: Run Build Script
         run: |

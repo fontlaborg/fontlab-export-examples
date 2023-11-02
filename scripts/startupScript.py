@@ -24,4 +24,4 @@ qapp = QGuiApplication.instance()
 
 dialog_closer = DialogCloser()
 qapp.installEventFilter(dialog_closer)
-pprint(f">> FontLab run even filter installed")
+pprint(f">> FontLab run event filter installed")
