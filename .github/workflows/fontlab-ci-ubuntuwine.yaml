@@ -69,7 +69,7 @@ jobs:
           echo "FONTLAB_DATA_PATH=$fontlab_user_dir" >> $GITHUB_ENV
           mkdir -p "$fontlab_user_dir"
           cp "scripts/startupScript.py" "$fontlab_user_dir"
-          tree "/home/runner/.wine/dosdevices/c:/users"
+          tree "/home/runner"
 
       - name: Prep FontLab run
         run: |
