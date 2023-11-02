@@ -62,8 +62,8 @@ jobs:
           $fontLabExe = "C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           $scriptPath = "scripts\\fontlab_export.vfpy"
           $configPath = "scripts\\fontlab_build.yaml"
-          $arguments = @($scriptPath, $configPath)
-          Start-Process -FilePath $fontLabExe -ArgumentList $arguments -Wait
+          $arguments = @("$scriptPath", "$configPath")
+          Start-Process -FilePath "$fontLabExe" -ArgumentList $arguments -Wait
 
       - name: Test Exported Fonts
         run: |
@@ -78,10 +78,10 @@ jobs:
         run: |
           $outputDirectory = "build"
           $distDirectory = "fonts"
-          if (Test-Path $outputDirectory) {
-              Move-Item -Path $outputDirectory\\*.ttf -Destination $distDirectory
+          if (Test-Path "$outputDirectory") {
+              Move-Item -Path "$outputDirectory\\*.ttf" -Destination "$distDirectory"
           }
-          git add $distDirectory\\*.ttf
+          git add "$distDirectory\\*.ttf"
           $commit = git commit -m "Update exported fonts"
           if ($commit -ne $null) {
               git push
