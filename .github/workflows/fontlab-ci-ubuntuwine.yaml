@@ -1,13 +1,13 @@
-name: FontLab CI Export
+name: FontLab CI Export on Ubuntu Wine
 
 on:
   push:
     branches:
       - main
 
-env:
-  GITHUB_STATE: ${{ github.workspace }}/state.txt
-  GITHUB_OUTPUT: ${{ github.workspace }}/output.txt
+#env:
+#  GITHUB_STATE: ${{ github.workspace }}/state.txt
+#  GITHUB_OUTPUT: ${{ github.workspace }}/output.txt
 
 jobs:
   build:
@@ -21,7 +21,14 @@ jobs:
         
       - name: Install prerequisites
         run: |
-          sudo apt-get update && sudo apt-get install wine64 curl
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install wine64 wine32 curl
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 &
+          export DISPLAY=:99
 
       - name: Get FontLab Version
         id: get_version
