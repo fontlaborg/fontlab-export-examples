@@ -1,13 +1,9 @@
-name: FontLab CI Export
+name: FontLab CI Export on Windows
 
 on:
   push:
     branches:
       - main
-
-env:
-  GITHUB_STATE: ${{ github.workspace }}/state.txt
-  GITHUB_OUTPUT: ${{ github.workspace }}/output.txt
 
 jobs:
   build:
@@ -51,10 +47,15 @@ jobs:
           $installer = Get-ChildItem -Path . -Filter "FontLab-Installer.exe" | Select-Object -ExpandProperty FullName
           Start-Process -FilePath $installer -ArgumentList "/NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES" -Wait
 
-      - name: Allow FontLab to run 
+      - name: Prep FontLab data folder
         run: |
-          $appItExe = "scripts\\fontlab_run.exe"
-          Start-Process -FilePath $appItExe 
+          tree /F $env:APPDATA
+          $fontlabUserDir = Join-Path $env:APPDATA 'FontLab\FontLab 8'
+          Write-Output "FontLab directory: $fontlabUserDir"
+          if (-not (Test-Path $fontlabUserDir)) {
+              New-Item -ItemType Directory -Path $fontlabUserDir -Force
+          }
+          Copy-Item -Path "scripts\startupScript.py" -Destination $fontlabUserDir
           
       - name: Run Build Script
         run: |
