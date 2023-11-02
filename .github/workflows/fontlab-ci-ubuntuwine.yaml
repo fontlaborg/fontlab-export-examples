@@ -1,0 +1,92 @@
+name: FontLab CI Export
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GITHUB_STATE: ${{ github.workspace }}/state.txt
+  GITHUB_OUTPUT: ${{ github.workspace }}/output.txt
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      fontlab_version: ${{ steps.get_version.outputs.version }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update && sudo apt-get install wine64 curl
+
+      - name: Get FontLab Version
+        id: get_version
+        run: |
+          url="https://download.fontlab.com/fontlab-8/upd-win64.php"
+          redirectUrl=$(curl -s -i -H "Accept-Language: en-US,en;q=0.9" -A "Mozilla/5.0" -o /dev/null -w '%{redirect_url}' $url)
+          if [ -z "$redirectUrl" ]; then
+              echo "Could not find the redirect URL in the response headers."
+              exit 1
+          fi
+          version=$(basename $redirectUrl | sed -e 's/FontLab-8-Win64-Install-//' -e 's/.exe//')
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Cache FontLab Installer
+        id: cache-installer
+        uses: actions/cache@v2
+        with:
+          path: |
+            FontLab-Installer.exe
+          key: ${{ runner.os }}-fontlab-installer-${{ steps.get_version.outputs.version }}
+
+      - name: Download FontLab
+        if: steps.cache-installer.outputs.cache-hit != 'true'
+        run: |
+          url="https://download.fontlab.com/fontlab-8/upd-win64.php"
+          output="FontLab-Installer.exe"
+          curl -L -H "Accept-Language: en-US,en;q=0.9" -A "Mozilla/5.0" -o $output $url
+
+      - name: Install FontLab
+        run: |
+          installer="FontLab-Installer.exe"
+          wine64 $installer /NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES
+
+      - name: Allow FontLab to run 
+        run: |
+          appItExe="scripts/fontlab_run.exe"
+          wine64 $appItExe 
+          
+      - name: Run Build Script
+        run: |
+          fontLabExe="C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
+          scriptPath="scripts/fontlab_export.vfpy"
+          configPath="scripts/fontlab_build.yaml"
+          wine64 $fontLabExe $scriptPath $configPath
+
+      - name: Test Exported Fonts
+        run: |
+          # Add your testing commands here
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+
+      - name: Commit and Push Exported Fonts
+        run: |
+          outputDirectory="build"
+          distDirectory="fonts"
+          if [ -d $outputDirectory ]; then
+              mv $outputDirectory/*.ttf $distDirectory
+          fi
+          git add $distDirectory/*.ttf
+          commit=$(git commit -m "Update exported fonts")
+          if [ -n "$commit" ]; then
+              git push
+          else
+              echo "No new fonts to commit"
+          fi
