@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-        
+
       - name: Install prerequisites
         run: |
           sudo dpkg --add-architecture i386
@@ -27,8 +27,7 @@ jobs:
 
       - name: Start Xvfb
         run: |
-          Xvfb :99 &
-          export DISPLAY=:99
+          Xvfb :99 & export DISPLAY=:99
 
       - name: Get FontLab Version
         id: get_version
@@ -60,13 +59,13 @@ jobs:
       - name: Install FontLab
         run: |
           installer="FontLab-Installer.exe"
-          wine64 $installer /NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES
+          wine $installer /NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES
 
-      - name: Allow FontLab to run 
+      - name: Allow FontLab to run
         run: |
           appItExe="scripts/fontlab_run.exe"
-          wine64 $appItExe 
-          
+          wine64 $appItExe
+
       - name: Run Build Script
         run: |
           fontLabExe="C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
