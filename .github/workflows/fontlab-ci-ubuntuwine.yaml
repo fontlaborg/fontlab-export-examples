@@ -31,7 +31,7 @@ jobs:
         run: |
           wineprefix_path=$(winepath -w "$HOME/.wine")
           echo "Wine prefix path: $wineprefix_path"
-          winepath -u 'C:\users\$(whoami)\AppData\Local\FontLab\FontLab 8' > fontlab_local_path.txt
+          winepath -u "C:\users\$(whoami)\AppData\Local\FontLab\FontLab 8" > fontlab_local_path.txt
           cat fontlab_local_path.txt
           echo "FONTLAB_DATA_PATH=$(cat fontlab_local_path.txt)" >> $GITHUB_ENV  
 
