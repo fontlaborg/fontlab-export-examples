@@ -1,63 +1,90 @@
-#!/usr/bin/open
-import yaml
-from fontlab import flWorkspace, ExportControl, flPreferences
+#import yaml
+from fontlab import flWorkspace, ExportControl, flPreferences, flItems
 from PythonQt import QtCore
 from pathlib import Path
 import sys
 from PythonQt.QtGui import QGuiApplication, QAction
-from fontlab_export_tools.utils import read_config
+#from fontlab_export_tools.utils import read_config
 import subprocess
+
 
 
 class FontLabFontExport:
     def __init__(self):
         self.qApp = QGuiApplication.instance()
         self.script_folder = Path(__file__).resolve().parent
-        config_path = Path(self.qApp.arguments()[2]).resolve()
-        self.config = read_config(config_path)
-        self.font_base_name = Path(self.config.input_path).stem
+        #config_path = Path(self.qApp.arguments()[2]).resolve()
+        self.input_path = Path(self.script_folder, "../sources/cosm-var.vfj").resolve()
+        #print(f"{self.input_path=}")
+        self.output_folder = Path(self.script_folder, "../build").resolve()
+        
+        self.font_base_name = self.input_path.stem
         self.fl_workspace = flWorkspace.instance()
         self.fl_main = self.fl_workspace.mainWindow
+        self.fl_items = flItems.instance()
 
-    def getQAction(self, code):
+    def runQAction(self, code):
+        #self.fl_main.doOutput(code, True)
         for action in self.fl_main.findChildren(QAction):
             if code in action.statusTip:
-                return action
-        return None
+                #self.fl_main.doOutput(code, True)
+                action.trigger()
 
-    def export(self):
-        input_path = self.config.input_path
-        output_folder = self.config.output_folder
-        if not output_folder.is_dir():
-            output_folder.mkdir(parents=True)
+    def prep(self):
+        if not self.output_folder.is_dir():
+            self.output_folder.mkdir(parents=True)
+        self.fl_items.notifyWorkspaceInitialized(self.fl_workspace)
+        self.fl_items.init()
+        self.fl_main.loadFont(str(self.input_path)) 
+        self.fl_package = self.fl_workspace.currentPackage
 
-        self.fl_main.loadFont(input_path)
-
-        fl_package = self.fl_workspace.currentPackage
+    def setBoolPref(self, pref_key, val): 
         fl_prefs = flPreferences()
         fl_prefd = fl_prefs.save()
-        fl_prefd["export.show_confirmation"] = False
+        pref_val = fl_prefd[pref_key]
+        if isinstance(pref_val, str): 
+            fl_prefd[pref_key] = "true" if val else "false"
+        else: 
+            fl_prefd[pref_key] = val
         fl_prefs.load(fl_prefd)
+
+    def export(self):
+        fl_prefs = flPreferences()
+        self.setBoolPref("export.show_confirmation", False)
+        self.setBoolPref("general.welcome", False)
         fl_export = ExportControl()
         fl_export.profileName = "OpenType TT" #"DesignSpace + UFO"
         fl_export.destinationMode = fl_prefs.DestinationFolder
         fl_export.conflictMode = fl_prefs.ConflictOverwrite
         fl_export.contentMode = fl_prefs.ContentMasters
-        fl_export.destinationFolder = output_folder
+        fl_export.destinationFolder = str(self.output_folder)
         fl_export.groupProfiles = False
         fl_export.groupFamily = False
 
-        self.fl_workspace.exportFont(fl_package, fl_export)
+        #self.qApp.processEvents()
+        #self.fl_main.doOutput(actionExit, True)
+        self.fl_workspace.addPackage(self.fl_package)
+        self.fl_workspace.exportFont(self.fl_package, fl_export)
+        self.fl_items.requestPackageAcceptFonts(self.fl_package)
+        self.fl_items.requestPackageBorn(self.fl_package)
+        #self.fl_workspace.changed()
+        #self.fl_workspace.update()
+        self.fl_items.notifyPackageReaded(self.fl_package)
+        self.fl_items.notifyPackageAdded(self.fl_package)
+        self.fl_items.notifyPackagesUpdated()
+        self.fl_items.notifyRequestShowWorkspace()
+        self.fl_package.close(False)
+        self.fl_main.activateWindow()
         self.qApp.processEvents()
-        fl_package.close(False)
-        self.getQAction("mainwindow.actionExit").trigger()
-        # app.ui.menu.file.exit.trigger()
-        #self.qApp.quit()
+        #self.fl_main.doOutput("Trying to quit", True)
+        self.runQAction("mainwindow.actionExit")
 
 
 def fl_main():
     fl_font_export = FontLabFontExport()
-    fl_font_export.export()
+    fl_font_export.prep()
+    QtCore.QTimer.singleShot(100, fl_font_export.export)
+    #fl_font_export.export()
 
 
 if __name__ == "__main__":
