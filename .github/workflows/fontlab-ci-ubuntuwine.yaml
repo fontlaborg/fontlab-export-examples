@@ -8,23 +8,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     outputs:
       fontlab_version: ${{ steps.get_version.outputs.version }}
 
-    services:
-      xvfb:
-        image: ubuntu:latest
-        options: --init --privileged
-        ports:
-          - 99:99
-        env:
-          DISPLAY: ':99'
-
-      
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 & export DISPLAY=:99
+          echo "DISPLAY=:99" >> $GITHUB_ENV
 
       - name: Install prerequisites
         run: |
@@ -78,12 +72,12 @@ jobs:
           cp "scripts/startupScript.py" "$fontlab_user_dir"
 
       - name: Run FontLab and build script
-        run: |
+        run: |          
           fontLabExe="C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           scriptPath=$(winepath -w "$(pwd)/scripts/fontlab_build.yaml")
           configPath=$(winepath -w "$(pwd)scripts/fontlab_build.yaml")
           wine64 "$fontLabExe" "$scriptPath" "$configPath"
-          tree "/home/runner"
+          tree "/home/runner" 
 
       - name: Test Exported Fonts
         run: |
