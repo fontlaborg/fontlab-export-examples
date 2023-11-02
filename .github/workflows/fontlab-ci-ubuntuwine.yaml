@@ -69,10 +69,10 @@ jobs:
           echo "FONTLAB_DATA_PATH=$fontlab_user_dir" >> $GITHUB_ENV
           mkdir -p "$fontlab_user_dir"
           cp "scripts/startupScript.py" "$fontlab_user_dir"
-          tree "/home/runner/.wine/dosdevices/c:/users" 
+          tree "/home/runner/.wine/dosdevices/c:/users"
 
-      - name: Run FontLab and build script
-        run: |          
+      - name: Prep FontLab run
+        run: |
           export WINEDEBUG=+err
           fontLabExe="C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           configPath=$(winepath -w "$(pwd)/scripts/fontlab_export.vfpy")
@@ -80,8 +80,11 @@ jobs:
           outputFolder=$(winepath -w "$(pwd)/build")
           mkdir -p "$(pwd)/build"
           echo ">> " wine64 explorer /desktop=name,1024x768 "$fontLabExe" "$scriptPath" "$sourcePath" "$outputFolder"
+
+      - name: Run FontLab and build script
+        run: |          
           wine64 explorer /desktop=name,1024x768 "$fontLabExe" "$scriptPath" "$sourcePath" "$outputFolder" 2>&1 | tee wine.log
-          tree "/home/runner" 
+          tree "/home/runner"
 
       - name: Test Exported Fonts
         run: |
