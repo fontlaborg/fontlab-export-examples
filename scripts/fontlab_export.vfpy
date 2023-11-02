@@ -8,7 +8,6 @@ from PythonQt.QtGui import QGuiApplication, QAction
 import subprocess
 
 
-
 class FontLabFontExport:
     def __init__(self):
         self.qApp = QGuiApplication.instance()
@@ -22,12 +21,19 @@ class FontLabFontExport:
         self.fl_workspace = flWorkspace.instance()
         self.fl_main = self.fl_workspace.mainWindow
         self.fl_items = flItems.instance()
+        self.fl_prefs = flPreferences()
+        self.pprint(f"{self.fl_prefs.pathAutoSave=}")
+        self.pprint(f"{self.fl_prefs.dataPathDefault=}")
+        self.pprint(f"{self.fl_prefs.dataPath=}")
+        self.pprint(f"{self.input_path=}")
+
+    def pprint(self, msg): 
+        QtCore.qDebug(str(msg))
+        self.fl_main.doOutput(str(msg) + "\n", False)
 
     def runQAction(self, code):
-        #self.fl_main.doOutput(code, True)
         for action in self.fl_main.findChildren(QAction):
             if code in action.statusTip:
-                #self.fl_main.doOutput(code, True)
                 action.trigger()
 
     def prep(self):
@@ -39,36 +45,30 @@ class FontLabFontExport:
         self.fl_package = self.fl_workspace.currentPackage
 
     def setBoolPref(self, pref_key, val): 
-        fl_prefs = flPreferences()
-        fl_prefd = fl_prefs.save()
+        fl_prefd = self.fl_prefs.save()
         pref_val = fl_prefd[pref_key]
         if isinstance(pref_val, str): 
             fl_prefd[pref_key] = "true" if val else "false"
         else: 
             fl_prefd[pref_key] = val
-        fl_prefs.load(fl_prefd)
+        self.fl_prefs.load(fl_prefd)
 
     def export(self):
-        fl_prefs = flPreferences()
         self.setBoolPref("export.show_confirmation", False)
         self.setBoolPref("general.welcome", False)
         fl_export = ExportControl()
         fl_export.profileName = "OpenType TT" #"DesignSpace + UFO"
-        fl_export.destinationMode = fl_prefs.DestinationFolder
-        fl_export.conflictMode = fl_prefs.ConflictOverwrite
-        fl_export.contentMode = fl_prefs.ContentMasters
+        fl_export.destinationMode = self.fl_prefs.DestinationFolder
+        fl_export.conflictMode = self.fl_prefs.ConflictOverwrite
+        fl_export.contentMode = self.fl_prefs.ContentMasters
         fl_export.destinationFolder = str(self.output_folder)
         fl_export.groupProfiles = False
         fl_export.groupFamily = False
 
-        #self.qApp.processEvents()
-        #self.fl_main.doOutput(actionExit, True)
         self.fl_workspace.addPackage(self.fl_package)
         self.fl_workspace.exportFont(self.fl_package, fl_export)
         self.fl_items.requestPackageAcceptFonts(self.fl_package)
         self.fl_items.requestPackageBorn(self.fl_package)
-        #self.fl_workspace.changed()
-        #self.fl_workspace.update()
         self.fl_items.notifyPackageReaded(self.fl_package)
         self.fl_items.notifyPackageAdded(self.fl_package)
         self.fl_items.notifyPackagesUpdated()
@@ -76,15 +76,14 @@ class FontLabFontExport:
         self.fl_package.close(False)
         self.fl_main.activateWindow()
         self.qApp.processEvents()
-        #self.fl_main.doOutput("Trying to quit", True)
         self.runQAction("mainwindow.actionExit")
 
 
 def fl_main():
     fl_font_export = FontLabFontExport()
     fl_font_export.prep()
-    QtCore.QTimer.singleShot(100, fl_font_export.export)
-    #fl_font_export.export()
+    #QtCore.QTimer.singleShot(100, fl_font_export.export)
+    fl_font_export.export()
 
 
 if __name__ == "__main__":
