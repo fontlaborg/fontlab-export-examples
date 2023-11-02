@@ -5,6 +5,15 @@ on:
     branches:
       - main
 
+services:
+  xvfb:
+    image: ubuntu:latest
+    options: --init --privileged
+    ports:
+      - 99:99
+    env:
+      DISPLAY: ":99"      
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,11 +23,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-
-      - name: Start Xvfb
-        run: |
-          Xvfb :99 & export DISPLAY=:99
-          echo "DISPLAY=:99" >> $GITHUB_ENV
 
       - name: Install prerequisites
         run: |
