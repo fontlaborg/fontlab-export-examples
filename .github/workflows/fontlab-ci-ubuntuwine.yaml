@@ -73,12 +73,13 @@ jobs:
 
       - name: Run FontLab and build script
         run: |          
+          export WINEDEBUG=+all
           fontLabExe="C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           configPath=$(winepath -w "$(pwd)/scripts/fontlab_export.vfpy")
           sourcePath=$(winepath -w "$(pwd)/sources/cosm-var.vfj")
           outputFolder=$(winepath -w "$(pwd)/build")
           mkdir -p "$(pwd)/build"
-          wine64 "$fontLabExe" "$scriptPath" "$sourcePath" "$outputFolder"
+          wine64 explorer /desktop=name,1024x768 "$fontLabExe" "$scriptPath" "$sourcePath" "$outputFolder"
           tree "/home/runner" 
 
       - name: Test Exported Fonts
