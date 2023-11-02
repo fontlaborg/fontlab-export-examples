@@ -15,7 +15,7 @@ class DialogCloser(QObject):
             QTimer.singleShot(
                 300, lambda: obj.reject()
             ) 
-            pprint(f"Closing {obj.className()}")
+            pprint(f">> Closing {obj.className()}")
             return True
         return False
 
@@ -24,4 +24,4 @@ qapp = QGuiApplication.instance()
 
 dialog_closer = DialogCloser()
 qapp.installEventFilter(dialog_closer)
-pprint(f"FontLab run even filter installed")
+pprint(f">> FontLab run even filter installed")
