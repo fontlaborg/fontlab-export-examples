@@ -61,7 +61,8 @@ jobs:
           $fontLabExe = "C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           $scriptPath = "scripts\\fontlab_export.vfpy"
           $configPath = "scripts\\fontlab_build.yaml"
-          Start-Process -FilePath $fontLabExe -ArgumentList $scriptPath $configPath -Wait
+          $arguments = @($scriptPath, $configPath)
+          Start-Process -FilePath $fontLabExe -ArgumentList $arguments -Wait
 
       - name: Test Exported Fonts
         run: |
