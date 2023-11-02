@@ -24,6 +24,16 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get install wine64 wine32 curl
+          wineboot
+          echo "WINEPREFIX=$HOME/.wine" >> $GITHUB_ENV
+
+      - name: Print FontLab Data Directory
+        run: |
+          wineprefix_path=$(winepath -w "$HOME/.wine")
+          echo "Wine prefix path: $wineprefix_path"
+          winepath -u 'C:\users\$(whoami)\AppData\Local\FontLab\FontLab 8' > fontlab_local_path.txt
+          cat fontlab_local_path.txt
+          echo "FONTLAB_DATA_PATH=$(cat fontlab_local_path.txt)" >> $GITHUB_ENV  
 
       - name: Start Xvfb
         run: |
