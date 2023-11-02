@@ -62,8 +62,10 @@ jobs:
           $fontLabExe = "C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           $scriptPath = "scripts\\fontlab_export.vfpy"
           $configPath = "scripts\\fontlab_build.yaml"
+          $logPath = "fontlab_run.log"
           $arguments = @("$scriptPath", "$configPath")
-          $process = Start-Process -FilePath "$fontLabExe" -ArgumentList "$scriptPath" -PassThru
+          $process = Start-Process -FilePath "$fontLabExe" -ArgumentList "$scriptPath" -RedirectStandardOutput "$logPath" -RedirectStandardError "$logPath" -PassThru
+          Get-Content -Path "$logPath"
           $timeout = New-Timespan -Seconds 300
           $sw = [Diagnostics.Stopwatch]::StartNew()
           while ($sw.Elapsed -lt $timeout) {
