@@ -81,6 +81,7 @@ jobs:
           scriptPath="scripts/fontlab_export.vfpy"
           configPath="scripts/fontlab_build.yaml"
           wine64 "$fontLabExe" "$scriptPath" "$configPath"
+          tree "/home/runner" 
 
       - name: Test Exported Fonts
         run: |

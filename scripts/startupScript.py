@@ -1,7 +1,9 @@
-from PythonQt.QtCore import QTimer, QEvent
+from PythonQt.QtCore import QTimer, QEvent, qDebug
 from PythonQt.QtGui import QGuiApplication
 from PythonQt.private import QObject
 
+def pprint(msg):
+    qDebug(str(msg))
 
 class DialogCloser(QObject):
     def eventFilter(self, obj, event):
@@ -11,8 +13,9 @@ class DialogCloser(QObject):
             and obj.className() in ("DlgInitialize", "DlgRegister")
         ):
             QTimer.singleShot(
-                100, lambda: obj.reject()
+                300, lambda: obj.reject()
             ) 
+            pprint(f"Closing {obj.className()}")
             return True
         return False
 
@@ -21,3 +24,4 @@ qapp = QGuiApplication.instance()
 
 dialog_closer = DialogCloser()
 qapp.installEventFilter(dialog_closer)
+pprint(f"FontLab run even filter installed")
