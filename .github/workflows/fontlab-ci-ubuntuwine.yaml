@@ -27,14 +27,6 @@ jobs:
           wineboot
           echo "WINEPREFIX=$HOME/.wine" >> $GITHUB_ENV
 
-      - name: Print FontLab Data Directory
-        run: |
-          wineprefix_path=$(winepath -w "$HOME/.wine")
-          echo "Wine prefix path: $wineprefix_path"
-          wine_user_dir=$(winepath -u 'C:\users\'"$USER"'\AppData\Local\FontLab\FontLab 8')
-          echo "Wine FontLab directory: $wine_user_dir"
-          echo "FONTLAB_DATA_PATH=$wine_user_dir" >> $GITHUB_ENV
-
       - name: Start Xvfb
         run: |
           Xvfb :99 & export DISPLAY=:99
@@ -72,11 +64,17 @@ jobs:
           installer="FontLab-Installer.exe"
           wine "$installer" /NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES
 
-      - name: Run FontLab and build script concurrently
+      - name: Prep FontLab data folder
         run: |
-          appItExe="scripts/fontlab_run.exe"
-          wine64 "$appItExe" &
-          
+          wineprefix_path=$(winepath -w "$HOME/.wine")
+          echo "Wine prefix path: $wineprefix_path"
+          wine_user_dir=$(winepath -u 'C:\users\'"$USER"'\AppData\Local\FontLab\FontLab 8')
+          echo "Wine FontLab directory: $wine_user_dir"
+          echo "FONTLAB_DATA_PATH=$wine_user_dir" >> $GITHUB_ENV
+          cp "scripts/startupScript.py" "$wine_user_dir"
+
+      - name: Run FontLab and build script
+        run: |          
           fontLabExe="C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           scriptPath="scripts/fontlab_export.vfpy"
           configPath="scripts/fontlab_build.yaml"
