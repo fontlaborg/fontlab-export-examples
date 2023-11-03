@@ -17,8 +17,9 @@ jobs:
 
       - name: Start Xvfb
         run: |
-          Xvfb :99 & export DISPLAY=:99
-          echo "DISPLAY=:99" >> $GITHUB_ENV
+          export DISPLAY=:0
+          Xvfb $DISPLAY -screen 0 1280x960x16 &
+          echo "DISPLAY=$DISPLAY" >> $GITHUB_ENV
 
       - name: Install prerequisites
         run: |
@@ -58,7 +59,7 @@ jobs:
       - name: Install FontLab
         run: |
           installer="FontLab-Installer.exe"
-          wine "$installer" /NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES
+          DISPLAY=:0.0 wine "$installer" /NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES
 
       - name: Prep FontLab data folder
         run: |
@@ -81,9 +82,11 @@ jobs:
           mkdir -p "$(pwd)/build"
           echo ">> " wine64 explorer /desktop=name,1024x768 "$fontLabExe" "$scriptPath" "$sourcePath" "$outputFolder"
 
+#           DISPLAY=:0.0 wine64 --display "$DISPLAY" "$fontLabExe" "$scriptPath" "$sourcePath" "$outputFolder" 2>&1 | tee wine.log
+
       - name: Run FontLab and build script
         run: |          
-          wine64 explorer /desktop=name,1024x768 "$fontLabExe" "$scriptPath" "$sourcePath" "$outputFolder" 2>&1 | tee wine.log
+          DISPLAY=:0.0 wine64 --display "$DISPLAY" "$fontLabExe" -display "$DISPLAY" "$scriptPath" 2>&1 | tee wine.log
           tree "/home/runner"
 
       - name: Test Exported Fonts

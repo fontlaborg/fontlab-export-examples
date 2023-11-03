@@ -14,12 +14,7 @@ class FontLabFontExport:
         self.qApp = QGuiApplication.instance()
         self.script_folder = Path(__file__).resolve().parent
         self.args = self.qApp.arguments()
-        #config_path = Path(self.qApp.arguments()[2]).resolve()
-        self.input_path = Path(self.args[2]).resolve()
-        pprint(f"{self.input_path=}")
-        self.output_folder = Path(self.args[3]).resolve()
-        pprint(f"{self.output_folder=}")
-        self.font_base_name = self.input_path.stem
+        qDebug(f">> {self.args=}")
         self.fl_workspace = flWorkspace.instance()
         self.fl_main = self.fl_workspace.mainWindow
         self.fl_items = flItems.instance()
@@ -30,12 +25,18 @@ class FontLabFontExport:
                 action.trigger()
 
     def prep(self):
+        #config_path = Path(self.qApp.arguments()[2]).resolve()
+        self.input_path = Path(self.args[2]).resolve()
+        pprint(f"{self.input_path=}")
+        self.output_folder = Path(self.args[3]).resolve()
+        pprint(f"{self.output_folder=}")
+        self.font_base_name = self.input_path.stem
         if not self.output_folder.is_dir():
             self.output_folder.mkdir(parents=True)
         self.fl_items.notifyWorkspaceInitialized(self.fl_workspace)
         self.fl_items.init()
         self.fl_main.loadFont(str(self.input_path)) 
-        pprint("LOADED")
+        pprint(f">> Loaded: {self.input_path}")
         self.fl_package = self.fl_workspace.currentPackage
 
     def setBoolPref(self, pref_key, val): 
@@ -61,21 +62,28 @@ class FontLabFontExport:
         fl_export.groupProfiles = False
         fl_export.groupFamily = False
 
-        self.fl_workspace.addPackage(self.fl_package)
-        pprint("ADDED")
+        #self.fl_workspace.addPackage(self.fl_package)
+        pprint(f">> !Exporting {self.fl_package}")
         self.fl_workspace.exportFont(self.fl_package, fl_export)
-        #self.fl_items.notifyRequestShowWorkspace()
-        self.fl_package.close(False)
+        pprint(f">> Closing {len(self.fl_workspace.packages)} packages")
+        self.closePackages()
+        #self.fl_package.close(False)
         #self.fl_main.activateWindow()
-        self.qApp.processEvents()
-        pprint("QUITTING")
-        self.runQAction("mainwindow.actionExit")
+        #self.qApp.processEvents()
 
+    def closePackages(self): 
+        for pi in range(len(self.fl_workspace.packages), -1, -1):
+            self.fl_workspace.closePackage(packages[pi])
+
+    def quit(self):
+        self.runQAction("mainwindow.actionExit")
 
 def fl_main():
     fl_font_export = FontLabFontExport()
-    fl_font_export.prep()
-    QTimer.singleShot(100, fl_font_export.export)
+    #fl_font_export.prep()
+    #QTimer.singleShot(200, fl_font_export.export)
+    pprint(f">> Quitting")
+    QTimer.singleShot(200, fl_font_export.quit)
     #fl_font_export.export()
 
 
