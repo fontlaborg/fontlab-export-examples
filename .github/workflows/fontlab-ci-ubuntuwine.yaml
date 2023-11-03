@@ -76,7 +76,7 @@ jobs:
           export WINEDEBUG=+err
           fontLabExe="C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           scriptPath=$(winepath -w "$(pwd)/scripts/build.vfpy")
-          echo Running " "$fontLabExe" "$scriptPath"
+          echo "Running " "$fontLabExe" "$scriptPath"
 
       - name: Run FontLab and build script
         run: |          
