@@ -1,0 +1,6 @@
+from fontlab_export import *
+#convert(
+#    input_path=, 
+#    output_folder, 
+#    profile_name="OpenType TT"
+#)

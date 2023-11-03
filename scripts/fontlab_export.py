@@ -1,20 +1,19 @@
-from fontlab import flWorkspace, ExportControl, flPreferences, flItems
-from PythonQt.QtCore import QTimer, qDebug
 from pathlib import Path
-import sys
-from PythonQt.QtGui import QGuiApplication, QAction
-#from fontlab_export_tools.utils import read_config
-import subprocess
+
+from fontlab import ExportControl, flItems, flPreferences, flWorkspace
+from PythonQt.QtCore import QTimer, qDebug
+from PythonQt.QtGui import QAction, QGuiApplication
+
 
 def pprint(msg):
     qDebug(str(msg))
+
 
 class FontLabFontExport:
     def __init__(self):
         self.qApp = QGuiApplication.instance()
         self.script_folder = Path(__file__).resolve().parent
         self.args = self.qApp.arguments()
-        qDebug(f">> {self.args=}")
         self.fl_workspace = flWorkspace.instance()
         self.fl_main = self.fl_workspace.mainWindow
         self.fl_items = flItems.instance()
@@ -24,37 +23,34 @@ class FontLabFontExport:
             if code in action.statusTip:
                 action.trigger()
 
-    def prep(self):
-        #config_path = Path(self.qApp.arguments()[2]).resolve()
-        self.input_path = Path(self.args[2]).resolve()
-        pprint(f"{self.input_path=}")
-        self.output_folder = Path(self.args[3]).resolve()
-        pprint(f"{self.output_folder=}")
+    def openFont(self, input_path):
+        self.input_path = Path(input_path).resolve()
         self.font_base_name = self.input_path.stem
-        if not self.output_folder.is_dir():
-            self.output_folder.mkdir(parents=True)
         self.fl_items.notifyWorkspaceInitialized(self.fl_workspace)
         self.fl_items.init()
-        self.fl_main.loadFont(str(self.input_path)) 
+        self.fl_main.loadFont(str(self.input_path))
         pprint(f">> Loaded: {self.input_path}")
         self.fl_package = self.fl_workspace.currentPackage
 
-    def setBoolPref(self, pref_key, val): 
+    def setBoolPref(self, pref_key, val):
         fl_prefs = flPreferences()
         fl_prefd = fl_prefs.save()
         pref_val = fl_prefd[pref_key]
-        if isinstance(pref_val, str): 
+        if isinstance(pref_val, str):
             fl_prefd[pref_key] = "true" if val else "false"
-        else: 
+        else:
             fl_prefd[pref_key] = val
         fl_prefs.load(fl_prefd)
 
-    def export(self):
+    def exportFont(self, output_folder, profile_name="OpenType TT"):
         fl_prefs = flPreferences()
         self.setBoolPref("export.show_confirmation", False)
         self.setBoolPref("general.welcome", False)
+        self.output_folder = Path(output_folder).resolve()
+        if not self.output_folder.is_dir():
+            self.output_folder.mkdir(parents=True)
         fl_export = ExportControl()
-        fl_export.profileName = "OpenType TT" #"DesignSpace + UFO"
+        fl_export.profileName = profile_name
         fl_export.destinationMode = fl_prefs.DestinationFolder
         fl_export.conflictMode = fl_prefs.ConflictOverwrite
         fl_export.contentMode = fl_prefs.ContentMasters
@@ -62,29 +58,28 @@ class FontLabFontExport:
         fl_export.groupProfiles = False
         fl_export.groupFamily = False
 
-        #self.fl_workspace.addPackage(self.fl_package)
-        pprint(f">> !Exporting {self.fl_package}")
+        pprint(f">> Exporting to {self.output_folder}")
         self.fl_workspace.exportFont(self.fl_package, fl_export)
-        pprint(f">> Closing {len(self.fl_workspace.packages)} packages")
-        self.closePackages()
-        #self.fl_package.close(False)
-        #self.fl_main.activateWindow()
-        #self.qApp.processEvents()
 
-    def closePackages(self): 
+    def closePackages(self):
         for pi in range(len(self.fl_workspace.packages), -1, -1):
             self.fl_workspace.closePackage(packages[pi])
 
+    def convert(self, input_path, output_folder, profile_name="OpenType TT"):
+        self.openFont(input_path)
+        self.exportFont(output_folder, profile_name)
+
     def quit(self):
+        self.closePackages()
+        self.qApp.processEvents()
         self.runQAction("mainwindow.actionExit")
 
-def fl_main():
+
+def convert(input_path, output_folder, profile_name="OpenType TT"):
     fl_font_export = FontLabFontExport()
-    #fl_font_export.prep()
-    #QTimer.singleShot(200, fl_font_export.export)
+    fl_font_export = convert(input_path, output_folder, profile_name)
     pprint(f">> Quitting")
     QTimer.singleShot(200, fl_font_export.quit)
-    #fl_font_export.export()
 
 
 if __name__ == "__main__":
