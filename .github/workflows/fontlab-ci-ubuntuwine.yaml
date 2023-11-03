@@ -70,28 +70,21 @@ jobs:
           echo "FONTLAB_DATA_PATH=$fontlab_user_dir" >> $GITHUB_ENV
           mkdir -p "$fontlab_user_dir"
           cp "scripts/startupScript.py" "$fontlab_user_dir"
-          tree "/home/runner"
 
       - name: Prep FontLab run
         run: |
           export WINEDEBUG=+err
           fontLabExe="C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
-          configPath=$(winepath -w "$(pwd)/scripts/fontlab_export.vfpy")
-          sourcePath=$(winepath -w "$(pwd)/sources/cosm-var.vfj")
-          outputFolder=$(winepath -w "$(pwd)/build")
-          mkdir -p "$(pwd)/build"
-          echo ">>>> " "$fontLabExe" "$scriptPath" "$sourcePath" "$outputFolder"
-
-#           DISPLAY=:0.0 wine64 --display "$DISPLAY" "$fontLabExe" "$scriptPath" "$sourcePath" "$outputFolder" 2>&1 | tee wine.log
+          scriptPath=$(winepath -w "$(pwd)/scripts/build.vfpy")
+          echo Running " "$fontLabExe" "$scriptPath"
 
       - name: Run FontLab and build script
         run: |          
           DISPLAY=:0.0 wine64 --display "$DISPLAY" "$fontLabExe" -display "$DISPLAY" "$scriptPath" 2>&1 | tee wine.log
-          tree "/home/runner"
 
       - name: Test Exported Fonts
         run: |
-          # Add your testing commands here
+          tree "/home/runner"
 
       - name: Configure Git
         run: |

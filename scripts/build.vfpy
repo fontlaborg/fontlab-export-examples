@@ -1,6 +1,9 @@
 from fontlab_export import *
-#convert(
-#    input_path=, 
-#    output_folder, 
-#    profile_name="OpenType TT"
-#)
+from pathlib import WindowsPath
+
+wineRepoFolder = WindowsPath("""Z:/home/runner/work/fontlab-export-examples/fontlab-export-examples""")
+convert(
+    input_path=WindowsPath(wineRepoFolder, "sources/cosm-var.vfj"), 
+    output_folder=WindowsPath(wineRepoFolder, "build"), 
+    profile_name="OpenType TT",
+)
