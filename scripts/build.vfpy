@@ -1,9 +1,9 @@
 from fontlab_export import *
 from pathlib import Path, WindowsPath
 
-pprint(Path(__file__).resolve())
+pprint(f"{Path(__file__).resolve()=}")
 wineRepoFolder = WindowsPath("""Z:/home/runner/work/fontlab-export-examples/fontlab-export-examples""")
-pprint(Path(wineRepoFolder).resolve())
+pprint(f"{Path(wineRepoFolder).resolve()=}")
 
 convert(
     input_path=WindowsPath(wineRepoFolder, "sources/cosm-var.vfj"), 

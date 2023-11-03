@@ -81,7 +81,7 @@ jobs:
 
       - name: Test Exported Fonts
         run: |
-          tree "$WINEPREFIX"
+          tree "/home/runner/work"
 
       - name: Configure Git
         run: |
