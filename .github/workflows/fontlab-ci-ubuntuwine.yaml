@@ -71,15 +71,12 @@ jobs:
           mkdir -p "$fontlab_user_dir"
           cp "scripts/startupScript.py" "$fontlab_user_dir"
 
-      - name: Prep FontLab run
-        run: |
+      - name: Run FontLab and build script
+        run: |          
           export WINEDEBUG=+err
           fontLabExe="C:\\Program Files\\FontLab\\FontLab 8\\FontLab 8.exe"
           scriptPath=$(winepath -w "$(pwd)/scripts/build.vfpy")
           echo "Running " "$fontLabExe" "$scriptPath"
-
-      - name: Run FontLab and build script
-        run: |          
           DISPLAY=:0.0 wine64 "$fontLabExe" -display "$DISPLAY" "$scriptPath" 2>&1 | tee wine.log
 
       - name: Test Exported Fonts
