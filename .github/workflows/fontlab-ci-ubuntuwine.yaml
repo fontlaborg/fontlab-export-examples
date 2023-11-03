@@ -80,11 +80,11 @@ jobs:
 
       - name: Run FontLab and build script
         run: |          
-          DISPLAY=:0.0 wine64 --display "$DISPLAY" "$fontLabExe" -display "$DISPLAY" "$scriptPath" 2>&1 | tee wine.log
+          DISPLAY=:0.0 wine64 "$fontLabExe" -display "$DISPLAY" "$scriptPath" 2>&1 | tee wine.log
 
       - name: Test Exported Fonts
         run: |
-          tree "/home/runner"
+          tree "$WINEPREFIX"
 
       - name: Configure Git
         run: |
