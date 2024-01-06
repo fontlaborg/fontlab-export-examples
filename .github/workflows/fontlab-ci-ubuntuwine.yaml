@@ -25,7 +25,9 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
-          sudo apt-get install wine64 wine32 curl tree
+          sudo apt-get install wine64 wine32 curl tree 
+          wine winecfg -v win10
+          wine64 winecfg -v win10
           wineboot
           echo "WINEPREFIX=$HOME/.wine" >> $GITHUB_ENV
 
@@ -60,6 +62,7 @@ jobs:
         run: |
           installer="FontLab-Installer.exe"
           DISPLAY=:0.0 wine "$installer" /NOCANCEL /SP- /VERYSILENT /SUPPRESSMSGBOXES
+          export WINE="$(which wine64)"
 
       - name: Prep FontLab data folder
         run: |
